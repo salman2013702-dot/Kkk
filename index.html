@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Laws Sin 2 .0</title>
+    <meta name="google-site-verification" content="0lJdiZj48M8VPahxdMJAw_kjt1E_hSz36Re5PGIcx7g" />
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>My Web Editor</title>
+
+<style>
+body {
+  margin:0;
+  font-family:Arial;
+  background:#1e1e1e;
+  color:white;
+}
+
+#topbar {
+  background:#333;
+  padding:10px;
+}
+
+button {
+  padding:8px;
+  margin-right:5px;
+}
+
+#container {
+  display:flex;
+  height:90vh;
+}
+
+textarea {
+  width:50%;
+  background:#111;
+  color:#0f0;
+  border:none;
+  padding:10px;
+}
+
+iframe {
+  width:50%;
+  border:none;
+  background:white;
+}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+
+<button onclick="newProject()">مشروع جديد</button>
+<button onclick="saveProject()">حفظ</button>
+<button onclick="downloadProject()">تحميل ZIP</button>
+
+<select id="projects" onchange="loadProject()"></select>
+
+</div>
+
+<div id="container">
+
+<textarea id="code"></textarea>
+
+<iframe id="preview"></iframe>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+
+let currentProject = "";
+
+// مشروع جديد
+function newProject(){
+
+let name = prompt("اسم المشروع:");
+
+if(!name) return;
+
+currentProject = name;
+
+document.getElementById("code").value =
+"<h1>"+name+"</h1>";
+
+saveProject();
+
+updateProjects();
+
+}
+
+// حفظ
+function saveProject(){
+
+let code =
+document.getElementById("code").value;
+
+localStorage.setItem(
+"project_"+currentProject,
+code
+);
+
+updatePreview();
+
+updateProjects();
+
+}
+
+// تحميل
+function loadProject(){
+
+let name =
+document.getElementById("projects").value;
+
+currentProject = name;
+
+let code =
+localStorage.getItem("project_"+name);
+
+document.getElementById("code").value = code;
+
+updatePreview();
+
+}
+
+// تحديث القائمة
+function updateProjects(){
+
+let select =
+document.getElementById("projects");
+
+select.innerHTML = "";
+
+for(let key in localStorage){
+
+if(key.startsWith("project_")){
+
+let name =
+key.replace("project_","");
+
+let option =
+document.createElement("option");
+
+option.value = name;
+
+option.textContent = name;
+
+select.appendChild(option);
+
+}
+
+}
+
+}
+
+// المعاينة
+function updatePreview(){
+
+let code =
+document.getElementById("code").value;
+
+document.getElementById("preview")
+.srcdoc = code;
+
+}
+
+// تحميل ZIP
+function downloadProject(){
+
+let zip = new JSZip();
+
+let code =
+document.getElementById("code").value;
+
+zip.file("index.html", code);
+
+zip.generateAsync({type:"blob"})
+.then(function(content){
+
+let a =
+document.createElement("a");
+
+a.href =
+URL.createObjectURL(content);
+
+a.download =
+currentProject+".zip";
+
+a.click();
+
+});
+
+}
+
+// حفظ تلقائي
+document.getElementById("code")
+.oninput = saveProject;
+
+updateProjects();
+
+</script>
+
+</body>
+</html>
+    
+  </body>
+  
+</html>
