@@ -3,157 +3,250 @@
 
   <head>
     <meta charset="UTF-8">
-    <title>Laws Sin 2 .0</title>
+    <title>Laws Sin 2 .1</title>
     <meta name="google-site-verification" content="0lJdiZj48M8VPahxdMJAw_kjt1E_hSz36Re5PGIcx7g" />
 
   </head>
     
   <body>
   <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Web Editor</title>
+<title>Laws Sin 2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- MONACO EDITOR -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 
 <style>
-body {
+
+body{
   margin:0;
-  font-family:Arial;
-  background:#1e1e1e;
+  background:#0d0f14;
+  font-family:Orbitron, Arial;
   color:white;
 }
 
-#topbar {
-  background:#333;
-  padding:10px;
-}
-
-button {
-  padding:8px;
-  margin-right:5px;
-}
-
-#container {
+/* NAVBAR */
+#navbar{
+  height:60px;
+  background:#0a0c10;
   display:flex;
-  height:90vh;
+  justify-content:space-between;
+  align-items:center;
+  padding:0 20px;
+  border-bottom:1px solid #1f2330;
 }
 
-textarea {
-  width:50%;
-  background:#111;
-  color:#0f0;
+#logo{
+  font-size:22px;
+  font-weight:bold;
+  background:linear-gradient(90deg,#00f0ff,#ff00c8);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation: glow 4s linear infinite;
+}
+
+@keyframes glow{
+  0%{filter:hue-rotate(0deg);}
+  100%{filter:hue-rotate(360deg);}
+}
+
+#nav-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+#avatar{
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  border:2px solid cyan;
+}
+
+#signin{
+  background:linear-gradient(90deg,#00f0ff,#ff00c8);
   border:none;
+  padding:8px 15px;
+  border-radius:6px;
+  color:white;
+  cursor:pointer;
+}
+
+/* MAIN */
+#main{
+  display:flex;
+  height:calc(100vh - 60px);
+}
+
+/* SIDEBAR */
+#sidebar{
+  width:200px;
+  background:#0a0c10;
+  border-right:1px solid #1f2330;
   padding:10px;
 }
 
-iframe {
+#newProject{
+  width:100%;
+  padding:10px;
+  background:#00f0ff;
+  border:none;
+  color:black;
+  font-weight:bold;
+  cursor:pointer;
+  margin-bottom:10px;
+}
+
+.project{
+  padding:8px;
+  background:#151922;
+  margin-bottom:5px;
+  cursor:pointer;
+}
+
+/* EDITOR */
+#editor{
+  width:50%;
+  height:100%;
+}
+
+/* PREVIEW */
+#preview{
   width:50%;
   border:none;
   background:white;
 }
+
 </style>
 </head>
 <body>
 
-<div id="topbar">
+<div id="navbar">
 
-<button onclick="newProject()">مشروع جديد</button>
-<button onclick="saveProject()">حفظ</button>
-<button onclick="downloadProject()">تحميل ZIP</button>
+<div id="logo">Laws Sin 2</div>
 
-<select id="projects" onchange="loadProject()"></select>
+<div id="nav-right">
+
+<img src="https://i.imgur.com/HeIi0wU.png" id="avatar">
+
+<button id="signin">Sign In / Up</button>
 
 </div>
 
-<div id="container">
+</div>
 
-<textarea id="code"></textarea>
+<div id="main">
+
+<div id="sidebar">
+
+<button id="newProject">+ New Project</button>
+
+<div id="projects"></div>
+
+</div>
+
+<div id="editor"></div>
 
 <iframe id="preview"></iframe>
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
 <script>
 
+let editor;
 let currentProject = "";
 
-// مشروع جديد
-function newProject(){
+/* INIT MONACO */
+require.config({
+  paths:{
+    vs:"https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs"
+  }
+});
 
-let name = prompt("اسم المشروع:");
+require(["vs/editor/editor.main"], function(){
 
-if(!name) return;
+editor = monaco.editor.create(document.getElementById("editor"),{
 
-currentProject = name;
+value:`<h1>Laws Sin 2</h1>
+<p>Start coding...</p>`,
 
-document.getElementById("code").value =
-"<h1>"+name+"</h1>";
+language:"html",
+
+theme:"vs-dark",
+
+automaticLayout:true
+
+});
+
+editor.onDidChangeModelContent(saveProject);
+
+});
+
+/* NEW PROJECT */
+document.getElementById("newProject").onclick=function(){
+
+let name=prompt("Project name:");
+
+if(!name)return;
+
+currentProject=name;
+
+editor.setValue("<h1>"+name+"</h1>");
 
 saveProject();
 
-updateProjects();
+loadProjects();
 
-}
+};
 
-// حفظ
+/* SAVE */
 function saveProject(){
 
-let code =
-document.getElementById("code").value;
+if(!currentProject)return;
 
 localStorage.setItem(
-"project_"+currentProject,
-code
+"lawsin2_"+currentProject,
+editor.getValue()
 );
 
 updatePreview();
 
-updateProjects();
-
 }
 
-// تحميل
-function loadProject(){
+/* LOAD PROJECTS */
+function loadProjects(){
 
-let name =
-document.getElementById("projects").value;
+let container=document.getElementById("projects");
 
-currentProject = name;
-
-let code =
-localStorage.getItem("project_"+name);
-
-document.getElementById("code").value = code;
-
-updatePreview();
-
-}
-
-// تحديث القائمة
-function updateProjects(){
-
-let select =
-document.getElementById("projects");
-
-select.innerHTML = "";
+container.innerHTML="";
 
 for(let key in localStorage){
 
-if(key.startsWith("project_")){
+if(key.startsWith("lawsin2_")){
 
-let name =
-key.replace("project_","");
+let name=key.replace("lawsin2_","");
 
-let option =
-document.createElement("option");
+let div=document.createElement("div");
 
-option.value = name;
+div.className="project";
 
-option.textContent = name;
+div.textContent=name;
 
-select.appendChild(option);
+div.onclick=function(){
+
+currentProject=name;
+
+editor.setValue(localStorage.getItem(key));
+
+};
+
+container.appendChild(div);
 
 }
 
@@ -161,50 +254,24 @@ select.appendChild(option);
 
 }
 
-// المعاينة
+/* PREVIEW */
 function updatePreview(){
 
-let code =
-document.getElementById("code").value;
-
-document.getElementById("preview")
-.srcdoc = code;
+document.getElementById("preview").srcdoc=
+editor.getValue();
 
 }
 
-// تحميل ZIP
-function downloadProject(){
+/* SIGN IN BUTTON */
+document.getElementById("signin").onclick=function(){
 
-let zip = new JSZip();
+alert("Sign In / Sign Up coming soon");
 
-let code =
-document.getElementById("code").value;
+};
 
-zip.file("index.html", code);
+setInterval(updatePreview,1000);
 
-zip.generateAsync({type:"blob"})
-.then(function(content){
-
-let a =
-document.createElement("a");
-
-a.href =
-URL.createObjectURL(content);
-
-a.download =
-currentProject+".zip";
-
-a.click();
-
-});
-
-}
-
-// حفظ تلقائي
-document.getElementById("code")
-.oninput = saveProject;
-
-updateProjects();
+loadProjects();
 
 </script>
 
